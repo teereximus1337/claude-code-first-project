@@ -30,11 +30,21 @@ export type Database = {
     Tables: {
       tasks: {
         Row: Task
-        Insert: Omit<Task, 'id' | 'created_at'> & {
-          id?: string
-          created_at?: string
+        Insert: {
+          user_id: string
+          title: string
+          done?: boolean
+          priority?: Priority
+          due_date?: string | null
+          google_task_id?: string | null
         }
-        Update: Partial<Omit<Task, 'id' | 'user_id'>>
+        Update: {
+          title?: string
+          done?: boolean
+          priority?: Priority
+          due_date?: string | null
+          google_task_id?: string | null
+        }
       }
     }
   }

@@ -1,6 +1,18 @@
 import { supabase } from './supabase'
 import type { Task, CreateTaskData, UpdateTaskData } from './types'
 
+// Type assertion for Supabase operations
+type SupabaseTask = {
+  id: string
+  user_id: string
+  title: string
+  done: boolean
+  priority: 'high' | 'medium' | 'low'
+  due_date: string | null
+  google_task_id: string | null
+  created_at: string
+}
+
 export class DatabaseError extends Error {
   constructor(message: string, public originalError?: unknown) {
     super(message)
@@ -14,7 +26,7 @@ export const database = {
    */
   async getUserTasks(userId: string): Promise<Task[]> {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('tasks')
         .select('*')
         .eq('user_id', userId)
@@ -24,7 +36,7 @@ export const database = {
         throw new DatabaseError(`Failed to fetch tasks: ${error.message}`, error)
       }
 
-      return data || []
+      return (data as SupabaseTask[]) || []
     } catch (error) {
       if (error instanceof DatabaseError) throw error
       throw new DatabaseError('Unexpected error while fetching tasks', error)
@@ -36,7 +48,7 @@ export const database = {
    */
   async createTask(userId: string, taskData: CreateTaskData): Promise<Task> {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('tasks')
         .insert({
           user_id: userId,
@@ -56,7 +68,7 @@ export const database = {
         throw new DatabaseError('No data returned after creating task')
       }
 
-      return data
+      return data as SupabaseTask
     } catch (error) {
       if (error instanceof DatabaseError) throw error
       throw new DatabaseError('Unexpected error while creating task', error)
@@ -68,7 +80,7 @@ export const database = {
    */
   async updateTask(taskId: string, updates: UpdateTaskData, userId: string): Promise<Task> {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('tasks')
         .update(updates)
         .eq('id', taskId)
@@ -84,7 +96,7 @@ export const database = {
         throw new DatabaseError('Task not found or you do not have permission to update it')
       }
 
-      return data
+      return data as SupabaseTask
     } catch (error) {
       if (error instanceof DatabaseError) throw error
       throw new DatabaseError('Unexpected error while updating task', error)
@@ -96,7 +108,7 @@ export const database = {
    */
   async deleteTask(taskId: string, userId: string): Promise<void> {
     try {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('tasks')
         .delete()
         .eq('id', taskId)
@@ -116,7 +128,7 @@ export const database = {
    */
   async getTaskCountsByDate(userId: string): Promise<Record<string, number>> {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('tasks')
         .select('due_date')
         .eq('user_id', userId)
@@ -127,7 +139,7 @@ export const database = {
       }
 
       const counts: Record<string, number> = {}
-      data?.forEach(task => {
+      data?.forEach((task: any) => {
         if (task.due_date) {
           counts[task.due_date] = (counts[task.due_date] || 0) + 1
         }
@@ -145,7 +157,7 @@ export const database = {
    */
   async getTasksForDate(userId: string, date: string): Promise<Task[]> {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('tasks')
         .select('*')
         .eq('user_id', userId)
@@ -156,7 +168,7 @@ export const database = {
         throw new DatabaseError(`Failed to fetch tasks for date: ${error.message}`, error)
       }
 
-      return data || []
+      return (data as SupabaseTask[]) || []
     } catch (error) {
       if (error instanceof DatabaseError) throw error
       throw new DatabaseError('Unexpected error while fetching tasks for date', error)
