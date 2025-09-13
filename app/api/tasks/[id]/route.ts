@@ -4,7 +4,7 @@ import { database } from '../../../../lib/database'
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { userId } = await auth()
@@ -14,7 +14,7 @@ export async function PUT(
     }
 
     const body = await request.json()
-    const taskId = params.id
+    const { id: taskId } = await params
 
     if (!taskId) {
       return NextResponse.json(
@@ -36,7 +36,7 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { userId } = await auth()
@@ -45,7 +45,7 @@ export async function DELETE(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const taskId = params.id
+    const { id: taskId } = await params
 
     if (!taskId) {
       return NextResponse.json(
