@@ -22,6 +22,7 @@ export interface UpdateTaskData {
   done?: boolean
   priority?: Priority
   due_date?: string | null
+  google_task_id?: string | null
 }
 
 export type Database = {
