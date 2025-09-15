@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useSession, signIn, signOut } from 'next-auth/react'
-import styles from '../page.module.css'
+import { Button, Badge } from './design-system'
 
 export default function GoogleTasksButton() {
   const { data: session, status } = useSession()
@@ -28,39 +28,37 @@ export default function GoogleTasksButton() {
 
   if (status === 'loading') {
     return (
-      <div className={styles.googleTasksButton}>
-        <span className={styles.googleIcon}>📅</span>
-        Loading...
-      </div>
+      <Button variant="secondary" size="sm" disabled>
+        📅 Loading...
+      </Button>
     )
   }
 
   if (session) {
     return (
-      <div className={styles.googleTasksContainer}>
-        <div className={styles.googleTasksConnected}>
-          <span className={styles.googleIcon}>✅</span>
-          <span>Google Tasks Connected</span>
-        </div>
-        <button 
-          className={styles.googleTasksDisconnect}
+      <div className="flex items-center gap-3">
+        <Badge variant="success" size="md">
+          ✅ Google Tasks Connected
+        </Badge>
+        <Button 
+          variant="ghost"
+          size="sm"
           onClick={handleDisconnect}
-          title="Disconnect Google Tasks"
         >
           Disconnect
-        </button>
+        </Button>
       </div>
     )
   }
 
   return (
-    <button 
-      className={styles.googleTasksButton}
+    <Button 
+      variant="primary"
+      size="sm"
       onClick={handleConnect}
       disabled={isConnecting}
     >
-      <span className={styles.googleIcon}>📅</span>
-      {isConnecting ? 'Connecting...' : 'Connect Google Tasks'}
-    </button>
+      📅 {isConnecting ? 'Connecting...' : 'Connect Google Tasks'}
+    </Button>
   )
 }

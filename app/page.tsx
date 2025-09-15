@@ -55,57 +55,77 @@ export default function Page() {
   // Show loading state while Clerk loads
   if (!isLoaded) {
     return (
-      <div className={styles.container}>
-        <div className={styles.loading}>Loading...</div>
-      </div>
+      <main className="min-h-screen bg-gray-50 py-8">
+        <div className="max-w-4xl mx-auto px-4">
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
+            <div className="flex justify-center items-center min-h-64 text-gray-500">
+              Loading...
+            </div>
+          </div>
+        </div>
+      </main>
     )
   }
   
   // This shouldn't happen due to middleware, but just in case
   if (!user) {
     return (
-      <div className={styles.container}>
-        <div className={styles.error}>Please sign in to access your tasks.</div>
-      </div>
+      <main className="min-h-screen bg-gray-50 py-8">
+        <div className="max-w-4xl mx-auto px-4">
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
+            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+              Please sign in to access your tasks.
+            </div>
+          </div>
+        </div>
+      </main>
     )
   }
   
   return (
-    <main className={styles.container}>
-      <div className={styles.header}>
-        <h1 className={styles.title}>Tasks & Calendar</h1>
-        <div className={styles.userInfo}>
-          <GoogleTasksButton />
-          <span className={styles.welcome}>Welcome, {user.firstName || user.emailAddresses[0].emailAddress}!</span>
-          <UserButton afterSignOutUrl="/sign-in" />
+    <main className="min-h-screen bg-gray-50 py-8">
+      <div className="max-w-4xl mx-auto px-4">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
+          <div className="flex justify-between items-center mb-8 pb-6 border-b border-gray-200">
+            <h1 className="text-3xl font-bold text-gray-900">Tasks & Calendar</h1>
+            <div className="flex items-center gap-4">
+              <GoogleTasksButton />
+              <span className="text-sm text-gray-600">
+                Welcome, {user.firstName || user.emailAddresses[0].emailAddress}!
+              </span>
+              <UserButton afterSignOutUrl="/sign-in" />
+            </div>
+          </div>
+          
+          {error && (
+            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6">
+              {error}
+            </div>
+          )}
+          
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <section>
+              <h2 className="text-xl font-semibold text-gray-900 mb-4">Tasks</h2>
+              <TaskList 
+                tasks={tasks}
+                setTasks={setTasks}
+                selectedDate={selectedDate}
+                onDateSelect={handleDateSelect}
+                loading={loading}
+              />
+            </section>
+            
+            <section>
+              <h2 className="text-xl font-semibold text-gray-900 mb-4">Calendar</h2>
+              <Calendar 
+                onDateSelect={handleDateSelect}
+                selectedDate={selectedDate}
+                taskCounts={taskCounts}
+              />
+            </section>
+          </div>
         </div>
       </div>
-      
-      {error && (
-        <div className={styles.error}>
-          {error}
-        </div>
-      )}
-      
-      <section>
-        <h2 className={styles.sectionHeader}>Tasks</h2>
-        <TaskList 
-          tasks={tasks}
-          setTasks={setTasks}
-          selectedDate={selectedDate}
-          onDateSelect={handleDateSelect}
-          loading={loading}
-        />
-      </section>
-      
-      <section>
-        <h2 className={styles.sectionHeader}>Calendar</h2>
-        <Calendar 
-          onDateSelect={handleDateSelect}
-          selectedDate={selectedDate}
-          taskCounts={taskCounts}
-        />
-      </section>
     </main>
   )
 }

@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import { apiClient } from '../../lib/api-client'
 import type { Task, Priority } from '../../lib/types'
+import { Card, Button, Input, Badge, IconButton, Checkbox } from './design-system'
 import styles from '../page.module.css'
 
 interface TaskListProps {
@@ -248,147 +249,146 @@ export default function TaskList({ tasks, setTasks, selectedDate, onDateSelect, 
 
   return (
     <div>
-      <form className={styles.form} onSubmit={(e) => { e.preventDefault(); addTask(); }}>
-        <label htmlFor="task-input" className={styles.srOnly}>
+      <form className="flex items-center gap-3 mb-6" onSubmit={(e) => { e.preventDefault(); addTask(); }}>
+        <label htmlFor="task-input" className="sr-only">
           Add new task
         </label>
-        <input
+        <Input
           id="task-input"
           type="text"
-          className={styles.input}
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
           onKeyPress={handleKeyPress}
           placeholder="Enter a new task"
           disabled={isCreating}
+          className="flex-1"
         />
-        <input
+        <Input
           type="date"
-          className={styles.dateInput}
           value={dueDateValue}
           onChange={(e) => setDueDateValue(e.target.value)}
           title="Due date (optional)"
           disabled={isCreating}
+          className="w-auto"
         />
-        <button type="submit" className={styles.button} disabled={isCreating}>
+        <Button type="submit" disabled={isCreating}>
           {isCreating ? 'Adding...' : 'Add'}
-        </button>
+        </Button>
       </form>
 
-      <div className={styles.filterButtons}>
-        <button 
-          className={filterMode === 'all' ? styles.filterButtonActive : styles.filterButton}
+      <div className="flex gap-2 mb-4 flex-wrap">
+        <Button 
+          variant={filterMode === 'all' ? 'primary' : 'secondary'}
+          size="sm"
           onClick={() => setFilterMode('all')}
         >
           All ({tasks.length})
-        </button>
-        <button 
-          className={filterMode === 'today' ? styles.filterButtonActive : styles.filterButton}
+        </Button>
+        <Button 
+          variant={filterMode === 'today' ? 'primary' : 'secondary'}
+          size="sm"
           onClick={() => setFilterMode('today')}
         >
           Today ({tasks.filter(t => isToday(t.due_date || '')).length})
-        </button>
+        </Button>
         {selectedDate && (
-          <button 
-            className={filterMode === 'selected' ? styles.filterButtonActive : styles.filterButton}
+          <Button 
+            variant={filterMode === 'selected' ? 'primary' : 'secondary'}
+            size="sm"
             onClick={() => setFilterMode('selected')}
           >
             {formatDate(selectedDate)} ({tasks.filter(t => t.due_date === selectedDate).length})
-          </button>
+          </Button>
         )}
       </div>
 
-      <ul className={styles.list}>
+      <div className="space-y-3">
         {filteredTasks.map(task => (
-          <li key={task.id} className={`${styles.item} priority-${task.priority}`}>
-            <input
-              type="checkbox"
-              className={styles.checkbox}
+          <Card key={task.id} className="flex items-center gap-4">
+            <Checkbox
               checked={task.done}
               onChange={() => toggleTask(task.id, task.done)}
               disabled={updatingTasks.has(task.id)}
             />
             
-            <div className={styles.priorityIndicator} style={{ backgroundColor: getPriorityColor(task.priority) }}></div>
-            
-            <div className={styles.taskContent}>
-              <span className={task.done ? styles.titleDone : styles.titleText}>
+            <div className="flex-1">
+              <div className={`font-medium ${task.done ? 'line-through text-gray-500' : 'text-gray-900'}`}>
                 {task.title}
-              </span>
-              <div className={styles.taskMeta}>
+              </div>
+              <div className="flex items-center gap-2 mt-1">
                 {task.due_date && (
-                  <span className={`${styles.dueDate} ${isToday(task.due_date) ? styles.dueDateToday : ''}`}>
+                  <Badge variant={isToday(task.due_date) ? 'today' : 'default'}>
                     {isToday(task.due_date) ? 'Today' : formatDate(task.due_date)}
-                  </span>
+                  </Badge>
                 )}
-                <span className={styles.priorityLabel} style={{ color: getPriorityColor(task.priority) }}>
-                  {getPriorityLabel(task.priority)} Priority
-                </span>
+                <Badge variant={task.priority}>
+                  {getPriorityLabel(task.priority)}
+                </Badge>
               </div>
             </div>
             
-            <div className={styles.taskActions}>
+            <div className="flex items-center gap-2">
               {session && (
-                <button
-                  className={`${styles.syncToggle} ${task.google_task_id ? styles.synced : ''} ${syncingTasks.has(task.id) ? styles.syncing : ''}`}
+                <IconButton
+                  variant={task.google_task_id ? 'success' : 'default'}
                   onClick={() => toggleGoogleTasksSync(task.id)}
                   disabled={syncingTasks.has(task.id) || updatingTasks.has(task.id)}
                   title={task.google_task_id ? 'Remove from Google Tasks' : 'Sync to Google Tasks'}
                 >
                   {syncingTasks.has(task.id) ? '⏳' : task.google_task_id ? '📅' : '📝'}
-                </button>
+                </IconButton>
               )}
               
-              <div className={styles.priorityMenuContainer}>
-                <button
-                  className={styles.priorityButton}
-                  onClick={(e) => togglePriorityMenu(task.id, e)}
+              <div className="relative">
+                <IconButton
+                  onClick={(e) => togglePriorityMenu(task.id, e as React.MouseEvent)}
                   title="Set Priority"
                   disabled={updatingTasks.has(task.id)}
                 >
                   ⚡
-                </button>
+                </IconButton>
                 {showPriorityMenu === task.id && (
-                  <div className={styles.priorityMenu}>
+                  <div className="absolute top-full right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-10 min-w-32">
                     <button
-                      className={styles.priorityMenuItem}
+                      className="flex items-center gap-2 w-full px-3 py-2 text-sm hover:bg-gray-50 first:rounded-t-lg"
                       onClick={() => updateTaskPriority(task.id, 'high')}
                     >
-                      <span className={styles.priorityDot} style={{ backgroundColor: '#ef4444' }}></span>
+                      <div className="w-2 h-2 rounded-full bg-red-500"></div>
                       High
                     </button>
                     <button
-                      className={styles.priorityMenuItem}
+                      className="flex items-center gap-2 w-full px-3 py-2 text-sm hover:bg-gray-50"
                       onClick={() => updateTaskPriority(task.id, 'medium')}
                     >
-                      <span className={styles.priorityDot} style={{ backgroundColor: '#f59e0b' }}></span>
+                      <div className="w-2 h-2 rounded-full bg-amber-500"></div>
                       Medium
                     </button>
                     <button
-                      className={styles.priorityMenuItem}
+                      className="flex items-center gap-2 w-full px-3 py-2 text-sm hover:bg-gray-50 last:rounded-b-lg"
                       onClick={() => updateTaskPriority(task.id, 'low')}
                     >
-                      <span className={styles.priorityDot} style={{ backgroundColor: '#10b981' }}></span>
+                      <div className="w-2 h-2 rounded-full bg-green-500"></div>
                       Low
                     </button>
                   </div>
                 )}
               </div>
               
-              <button 
-                className={styles.buttonSecondary}
+              <Button
+                variant="secondary"
+                size="sm"
                 onClick={() => deleteTask(task.id)}
                 disabled={updatingTasks.has(task.id)}
               >
                 {updatingTasks.has(task.id) ? 'Loading...' : 'Delete'}
-              </button>
+              </Button>
             </div>
-          </li>
+          </Card>
         ))}
-      </ul>
+      </div>
       
       {filteredTasks.length === 0 && !loading && (
-        <div className={styles.loading}>
+        <div className="flex justify-center items-center min-h-32 text-gray-500">
           {filterMode === 'all' ? 'No tasks yet. Create your first task above!' : 'No tasks for this filter.'}
         </div>
       )}
